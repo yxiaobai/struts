@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+<struts>
+    <constant name="struts.i18n.reload" value="true"/>
+    <constant name="struts.enable.DynamicMethodInvocation" value="true"/>
+    <constant name="struts.devMode" value="true"/>
+    <constant name="struts.configuration.xml.reload" value="true"/>
+    <constant name="struts.custom.i18n.resources" value="res"/>
+    <constant name="struts.i18n.encoding" value="UTF-8"/>
+    <constant name="struts.ui.theme" value="simple"/>
+    <constant name="struts.action.extension" value="action,,do"/>
+    <constant name="struts.action.excludePattern" value="/myservlet.action,/tag.jsp"/>
+
+    <!--注解实现-->
+    <package name="default" extends="struts-default">
+        <default-action-ref name="index" ></default-action-ref>
+        <global-allowed-methods>abc</global-allowed-methods>
+        <action name="index">
+            <result type="redirect">/error.html</result>
+        </action>
+        <action name="login" class="com.action.LoginAction" method="execute">
+            <result name="success" type="dispatcher">/success.jsp</result>
+            <result name="fail" type="redirect">/fail.jsp</result>
+        </action>
+
+        <action name="test" class="com.action.Test">
+            <allowed-methods>abc,yyy</allowed-methods>
+        </action>
+
+        <action name="user*" class="com.action.Test" method="{1}">
+            <allowed-methods>abc,yyy</allowed-methods>
+        </action>
+
+        <action name="show" class="com.opensymphony.xwork2.ActionSupport" method="execute">
+            <result name="success" type="plainText">
+                <param name="charset">utf-8</param>
+                <param name="location">index.jsp</param>
+            </result>
+        </action>
+
+        <action name="ok">
+            <result type="plainText">
+                <param name="charset">utf-8</param>
+                <param name="location">success.jsp</param>
+            </result>
+        </action>
+    </package>
+    <!--注解实现  over-->
+
+    <!--登陆拦截-->
+    <package name="checklogin" abstract="true" extends="struts-default">
+        <interceptors>
+            <interceptor name="auth" class="com.interceptor.AuthInterceptor"/>
+            <interceptor-stack name="myauth">
+                <interceptor-ref name="auth"/>
+                <interceptor-ref name="defaultStack"/>
+            </interceptor-stack>
+        </interceptors>
+        <default-interceptor-ref name="myauth"/>
+        <global-results>
+            <result name="login" type="redirect">/login.jsp</result>
+        </global-results>
+        <global-allowed-methods>ok,save,abc</global-allowed-methods>
+    </package>
+    <package name="admin" namespace="/admin" extends="checklogin">
+        <action name="uuu" class="com.action.UserAction" method="show">
+        </action>
+    </package>
+    <!--登陆拦截  over-->
+
+
+    <!--拦截器与自定义拦截器-->
+    <package name="user" namespace="/" extends="struts-default">
+        <action name="show" class="com.action.UserAction" method="show">
+        </action>
+    </package>
+
+    <package name="my" namespace="/">
+        <interceptors>
+            <interceptor name="aa" class="com.opensymphony.xwork2.interceptor.ParametersInterceptor"/>
+            <interceptor name="timer" class="com.opensymphony.xwork2.interceptor.TimerInterceptor"/>
+            <interceptor-stack name="myi">
+                <interceptor-ref name="aa"/>
+                <interceptor-ref name="timer"/>
+            </interceptor-stack>
+            <interceptor name="myt" class="com.interceptor.MyTimer"/>
+            <interceptor-stack name="ttt">
+                <interceptor-ref name="timer"/>
+                <interceptor-ref name="myt"/>
+                <interceptor-ref name="aa"/>
+            </interceptor-stack>
+
+        </interceptors>
+        <action name="mys" class="com.action.UserAction" method="show">
+            <interceptor-ref name="myi"/>
+        </action>
+        <!--  自定义拦截器  -->
+        <action name="yy" class="com.action.UserAction" method="yyy">
+           <!-- <interceptor-ref name="ttt"/>-->
+            <interceptor-ref name="timer"/>
+            <interceptor-ref name="aa"/>
+            <interceptor-ref name="myt"/>
+        </action>
+    </package>
+
+</struts>
